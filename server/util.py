@@ -14,7 +14,6 @@ def classify_image(image_base64_data, file_path=None):
     imgs = get_cropped_image_if_2_eyes(file_path, image_base64_data)
 
     result = []
-
     for img in imgs:
         scaled_raw_img = cv2.resize(img, (32, 32))
         img_har = w2d(img, 'db1', 5)
@@ -27,12 +26,13 @@ def classify_image(image_base64_data, file_path=None):
         len_image_array = 32*32*3 + 32*32
 
         final = combined_img.reshape(1, len_image_array).astype(float)
-
+       
         result.append({
             'class': class_number_to_name(__model.predict(final)[0]),
             'class_probability': np.round(__model.predict_proba(final)*100, 2).tolist()[0],
             'class_dictionary': __class_name_to_number
         })
+        
     return result
 
 def load_saved_artifacts():
@@ -67,7 +67,7 @@ def get_cv2_image_from_base64_string(b64str):
     :param uri:
     :return:
     '''
-    encoded_data = b64str
+    encoded_data = b64str.split(',')[1]
     nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     return img
@@ -81,7 +81,6 @@ def get_cropped_image_if_2_eyes(image_path, image_base64_data):
         img = cv2.imread(image_path)
     else:
         img = get_cv2_image_from_base64_string(image_base64_data)
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
